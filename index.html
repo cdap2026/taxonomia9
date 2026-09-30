@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistemática y Taxonomía - Grado 9°</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        .emoji-display { font-size: 8rem; line-height: 1; margin: 1rem 0; text-shadow: 2px 2px 8px rgba(0,0,0,0.1); }
+        .specimen-card { background: radial-gradient(circle, #ffffff 0%, #f0fdf4 100%); }
+    </style>
+</head>
+<body class="bg-gray-100 text-gray-800 font-sans min-h-screen flex flex-col">
+    <header class="bg-teal-800 text-white p-6 shadow-md text-center border-b-4 border-teal-600">
+        <h1 class="text-3xl md:text-4xl font-bold tracking-tight">Laboratorio Virtual de Sistemática</h1>
+        <p class="text-sm md:text-base mt-2 opacity-90 font-light">Clasificación Taxonómica Avanzada - Grado Noveno</p>
+    </header>
+
+    <main class="flex-grow flex flex-col items-center p-4 md:p-6 max-w-4xl mx-auto w-full">
+        <!-- Pantalla de Inicio -->
+        <div id="setup-screen" class="w-full text-center bg-white p-8 md:p-12 rounded-xl shadow-lg mt-8 border border-gray-200">
+            <h2 class="text-3xl font-bold mb-4 text-teal-900">Análisis Morfológico</h2>
+            <p class="mb-8 text-lg text-gray-600 leading-relaxed">
+                A continuación se presentará un espécimen biológico. Deberás analizar sus caracteres homólogos y análogos, tipo de tejido, estructuras reproductivas y soporte esquelético para determinar su clasificación filogenética mediante el uso de claves dicotómicas.
+            </p>
+            <button onclick="startGame()" class="bg-teal-700 hover:bg-teal-800 text-white font-bold py-4 px-10 rounded-lg text-xl shadow-md transition duration-300 transform hover:scale-105 w-full md:w-auto">
+                Extraer Muestra e Iniciar
+            </button>
+        </div>
+
+        <!-- Pantalla de Análisis -->
+        <div id="game-screen" class="hidden w-full flex flex-col md:flex-row gap-6 mt-4">
+            <!-- Visor del Espécimen -->
+            <div class="specimen-card p-6 rounded-xl shadow-md w-full md:w-1/3 text-center border-t-4 border-teal-700 flex flex-col justify-center items-center">
+                <h2 class="text-xs font-bold text-teal-700 uppercase tracking-widest mb-4">Espécimen en Observación</h2>
+                <div id="specimen-image" class="emoji-display">❓</div>
+                <div class="mt-4 p-3 bg-white bg-opacity-70 rounded border border-teal-100 w-full text-sm text-gray-600 text-left">
+                    <span class="font-bold text-teal-800 block mb-1">Notas de Laboratorio:</span>
+                    <span id="specimen-hints" class="italic">Analiza visualmente las estructuras primarias del organismo.</span>
+                </div>
+            </div>
+
+            <!-- Panel de Claves -->
+            <div id="question-container" class="bg-white p-6 md:p-8 rounded-xl shadow-md w-full md:w-2/3 border border-gray-100">
+                <div class="mb-4 inline-flex items-center bg-teal-50 text-teal-800 px-4 py-2 rounded-lg text-sm font-bold border border-teal-100">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path></svg>
+                    Criterio: <span id="trait-name" class="ml-1 text-teal-900"></span>
+                </div>
+                <p id="question-text" class="text-xl font-medium mb-8 text-gray-800 leading-relaxed"></p>
+                <div class="flex flex-col gap-4">
+                    <button onclick="makeChoice('a')" class="bg-gray-50 hover:bg-teal-50 border-2 border-gray-200 hover:border-teal-500 rounded-xl p-5 text-left transition duration-200 group">
+                        <span class="font-bold text-teal-700 block mb-2 text-sm uppercase tracking-wide group-hover:text-teal-900">Opción A</span>
+                        <span id="btn-a" class="text-gray-700 font-medium group-hover:text-gray-900"></span>
+                    </button>
+                    <button onclick="makeChoice('b')" class="bg-gray-50 hover:bg-teal-50 border-2 border-gray-200 hover:border-teal-500 rounded-xl p-5 text-left transition duration-200 group">
+                        <span class="font-bold text-teal-700 block mb-2 text-sm uppercase tracking-wide group-hover:text-teal-900">Opción B</span>
+                        <span id="btn-b" class="text-gray-700 font-medium group-hover:text-gray-900"></span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pantalla de Resultados -->
+        <div id="result-screen" class="hidden w-full bg-white p-8 md:p-12 rounded-xl shadow-lg text-center border-t-8 border-teal-700 mt-4">
+            <div class="inline-block p-4 bg-teal-50 rounded-full mb-4">
+                <div class="text-6xl" id="result-emoji">🧬</div>
+            </div>
+            <h2 class="text-sm font-bold text-gray-500 uppercase tracking-widest mb-2">Reporte Taxonómico Generado</h2>
+            <h3 class="text-4xl font-black text-gray-800 mb-2" id="result-name"></h3>
+            <h4 class="text-2xl italic text-teal-700 mb-8 pb-6 border-b border-gray-200 font-serif" id="result-scientific"></h4>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 text-left mb-10">
+                <div class="bg-gray-50 p-6 rounded-xl border border-gray-200 shadow-inner">
+                    <h4 class="font-bold text-lg mb-4 text-teal-900 flex items-center">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        Morfología y Fisiología Evidenciada:
+                    </h4>
+                    <ul id="result-traits" class="list-none space-y-3 text-sm text-gray-700"></ul>
+                </div>
+                <div class="bg-teal-800 p-6 rounded-xl border border-teal-900 text-white shadow-lg flex flex-col justify-center">
+                    <h4 class="font-bold text-lg mb-4 text-teal-100 border-b border-teal-600 pb-2">Clasificación Filogenética:</h4>
+                    <div id="result-taxonomy" class="space-y-2 text-sm"></div>
+                </div>
+            </div>
+            
+            <button onclick="location.reload()" class="bg-teal-700 hover:bg-teal-800 text-white font-bold py-4 px-10 rounded-lg shadow-md transition duration-300 transform hover:scale-105 text-lg">
+                Clasificar Nuevo Espécimen
+            </button>
+        </div>
+    </main>
+
+    <footer class="bg-gray-900 text-gray-400 text-center p-5 text-sm mt-auto font-medium tracking-wide">
+        <p>Laboratorio de Ciencias Naturales (Grado 9°) - Prof. CRISTIAN DAVID AYAZO</p>
+    </footer>
+
+    <script>
+        const specimens = [
+            { 
+                id: 'orquidea', emoji: '🌸', result: 'Flor de Mayo (Orquídea)', scientific: 'Cattleya trianae',
+                taxonomy: { dominio: 'Eukarya', reino: 'Plantae', division: 'Angiospermae', clase: 'Liliopsida (Monocotiledónea)' },
+                hints: "Se observa una estructura floral zigomorfa con pétalos modificados. Carente de estructuras de locomoción."
+            },
+            { 
+                id: 'helecho', emoji: '🌿', result: 'Helecho Arbóreo Bobo', scientific: 'Cyathea caracasana',
+                taxonomy: { dominio: 'Eukarya', reino: 'Plantae', division: 'Pteridophyta', clase: 'Polypodiopsida' },
+                hints: "Presenta frondes (hojas compuestas) grandes. En el envés se observan agrupaciones granulares oscuras."
+            },
+            { 
+                id: 'rana', emoji: '🐸', result: 'Rana Dorada Venenosa', scientific: 'Phyllobates terribilis',
+                taxonomy: { dominio: 'Eukarya', reino: 'Animalia', phylum: 'Chordata', clase: 'Amphibia' },
+                hints: "Organismo tetrápodo de coloración aposemática muy brillante. Piel de apariencia húmeda y lisa."
+            },
+            { 
+                id: 'oso', emoji: '🐻', result: 'Oso de Anteojos', scientific: 'Tremarctos ornatus',
+                taxonomy: { dominio: 'Eukarya', reino: 'Animalia', phylum: 'Chordata', clase: 'Mammalia' },
+                hints: "Tetrápodo robusto con denso aislamiento térmico. Marcas blanquecinas evidentes alrededor de los globos oculares."
+            },
+            { 
+                id: 'escarabajo', emoji: '🪲', result: 'Escarabajo Hércules', scientific: 'Dynastes hercules',
+                taxonomy: { dominio: 'Eukarya', reino: 'Animalia', phylum: 'Arthropoda', clase: 'Insecta' },
+                hints: "Organismo segmentado con cubierta externa rígida. Presenta protuberancias cefálicas y torácicas prominentes."
+            }
+        ];
+
+        // Árbol dicotómico avanzado para 9no grado
+        const tree = {
+            question: "¿El organismo presenta células con pared celular de celulosa, cloroplastos y nutrición autótrofa, o carece de pared celular y tiene nutrición heterótrofa por ingestión?",
+            trait: "Dominio Eukarya: Reino y Tipo de Nutrición",
+            a: {
+                text: "Posee pared celular de celulosa y es autótrofo fotosintético (Reino Plantae).",
+                question: "¿Posee tejido vascular (xilema/floema) pero carece de flores y semillas, reproduciéndose mediante esporas, o es vascular y produce flores verdaderas con semillas encerradas en un fruto?",
+                trait: "Sistema Vascular y Estructuras Reproductivas",
+                a: { 
+                    text: "Vascular sin semillas, reproducción por esporas agrupadas en soros.",
+                    question: "¿Desarrolla un rizoma modificado que forma un pseudo-tronco arborescente y frondes (hojas) pinnadas de gran tamaño?",
+                    trait: "Morfología del Tallo y Hojas",
+                    a: { 
+                        result: "Helecho Arbóreo Bobo", scientific: "Cyathea caracasana", 
+                        traits: ["1. Células eucariotas vegetales (celulosa)", "2. Tejido vascular verdadero (traqueofita)", "3. Reproducción asexual por esporas", "4. Presencia de soros en el envés foliar", "5. Tallo arborescente (rizoma erecto)", "6. Crecimiento de frondes por prefoliación circinada", "7. Ausencia de flores y frutos"] 
+                    },
+                    b: { error: "Análisis incorrecto de las estructuras vasculares y reproductivas." }
+                },
+                b: { 
+                    text: "Vascular con flores (Angiosperma) y semillas protegidas.",
+                    question: "¿Sus flores presentan simetría bilateral (zigomorfa) con un pétalo modificado llamado labelo para atraer polinizadores específicos?",
+                    trait: "Morfología Floral (Simetría)",
+                    a: { 
+                        result: "Flor de Mayo (Orquídea)", scientific: "Cattleya trianae", 
+                        traits: ["1. Nutrición autótrofa fotosintética", "2. Angiosperma (semilla en fruto)", "3. Monocotiledónea (nervadura paralela)", "4. Flor de simetría zigomorfa", "5. Presencia de labelo (pétalo modificado)", "6. Adaptaciones epífitas (crece sobre árboles)", "7. Raíces recubiertas de velamen esponjoso"] 
+                    },
+                    b: { error: "Observación floral incorrecta. Revisa la simetría de la corola." }
+                }
+            },
+            b: {
+                text: "Carece de pared celular y es heterótrofo (Reino Animalia).",
+                question: "¿Presenta un endoesqueleto (óseo/cartilaginoso) con notocorda o cordón nervioso dorsal, o posee un exoesqueleto de quitina con apéndices articulados?",
+                trait: "Estructura de Soporte y Sistema Nervioso",
+                a: {
+                    text: "Endoesqueleto óseo y cordón nervioso dorsal (Phylum Chordata).",
+                    question: "¿Es un organismo endotérmico con tegumento cubierto de pelo y glándulas mamarias, o es ectotérmico con piel desnuda, altamente permeable y glandular?",
+                    trait: "Termorregulación y Tegumento",
+                    a: {
+                        text: "Endotérmico, cuerpo con pelo, vivíparo (Clase Mammalia).",
+                        question: "¿Presenta un pelaje denso y oscuro con un patrón de pigmentación blanco o amarillento característico alrededor de los ojos y el hocico?",
+                        trait: "Patrón de Pigmentación y Adaptación Morfológica",
+                        a: {
+                            result: "Oso de Anteojos", scientific: "Tremarctos ornatus", 
+                            traits: ["1. Células animales eucariotas heterótrofas", "2. Presencia de endoesqueleto óseo", "3. Regulación térmica: Endotermia", "4. Tegumento cubierto por pelo denso", "5. Hembras con glándulas mamarias", "6. Dentición adaptada a dieta omnívora/herbívora", "7. Patrón facial de manchas blanquecinas"]
+                        },
+                        b: { error: "El patrón de pigmentación no coincide con el espécimen." }
+                    },
+                    b: {
+                        text: "Ectotérmico, piel desnuda, ovíparo con metamorfosis (Clase Amphibia).",
+                        question: "¿Exhibe coloración aposemática (colores brillantes de advertencia) y glándulas en la piel que secretan potentes alcaloides tóxicos?",
+                        trait: "Mecanismos de Defensa y Coloración",
+                        a: {
+                            result: "Rana Dorada Venenosa", scientific: "Phyllobates terribilis", 
+                            traits: ["1. Heterótrofo vertebrado tetrápodo", "2. Regulación térmica: Ectotermia", "3. Tegumento desnudo y altamente permeable", "4. Respiración cutánea y pulmonar", "5. Coloración aposemática de advertencia", "6. Glándulas secretoras de batracotoxina", "7. Desarrollo mediante metamorfosis"]
+                        },
+                        b: { error: "Has ignorado la evidente advertencia visual de su coloración." }
+                    }
+                },
+                b: {
+                    text: "Exoesqueleto quitinoso y apéndices articulados (Phylum Arthropoda).",
+                    question: "¿El cuerpo está dividido en tres tagmas (cabeza, tórax, abdomen), presenta tres pares de patas y el primer par de alas está endurecido formando élitros?",
+                    trait: "Segmentación Corporal (Tagmosis) y Alas",
+                    a: {
+                        result: "Escarabajo Hércules", scientific: "Dynastes hercules", 
+                        traits: ["1. Invertebrado de simetría bilateral", "2. Exoesqueleto compuesto de quitina", "3. Tagmosis: Cabeza, tórax y abdomen", "4. Presencia de 6 patas (Hexápodo)", "5. Alas anteriores esclerotizadas (élitros)", "6. Dimorfismo sexual extremo (cuernos torácicos en machos)", "7. Desarrollo por holometabolía (metamorfosis completa)"]
+                    },
+                    b: { error: "Las características de segmentación y extremidades no coinciden." }
+                }
+            }
+        };
+
+        let currentSpecimen = null;
+        let currentNode = null;
+
+        function startGame() {
+            currentSpecimen = specimens[Math.floor(Math.random() * specimens.length)];
+            document.getElementById('specimen-image').textContent = currentSpecimen.emoji;
+            document.getElementById('specimen-hints').textContent = currentSpecimen.hints;
+            
+            document.getElementById('setup-screen').classList.add('hidden');
+            document.getElementById('game-screen').classList.remove('hidden');
+            
+            currentNode = tree;
+            renderQuestion();
+        }
+
+        function renderQuestion() {
+            if (currentNode.result) {
+                if (currentNode.result === currentSpecimen.result) {
+                    showSuccess(currentNode);
+                } else {
+                    showError("¡Error de Taxonomía! Tu deducción filogenética es incorrecta según la morfología observada.");
+                }
+                return;
+            }
+            
+            if (currentNode.error) {
+                showError(`Hipótesis Refutada: ${currentNode.error}`);
+                return;
+            }
+
+            document.getElementById('trait-name').textContent = currentNode.trait;
+            document.getElementById('question-text').textContent = currentNode.question;
+            document.getElementById('btn-a').textContent = currentNode.a.text;
+            document.getElementById('btn-b').textContent = currentNode.b.text;
+        }
+
+        function makeChoice(choice) {
+            currentNode = currentNode[choice];
+            renderQuestion();
+        }
+
+        function showError(msg) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Desviación Filogenética',
+                text: msg,
+                confirmButtonColor: '#0f766e',
+                confirmButtonText: 'Reevaluar Muestra'
+            }).then(() => {
+                currentNode = tree; // Reiniciar
+                renderQuestion();
+            });
+        }
+
+        function showSuccess(data) {
+            document.getElementById('game-screen').classList.add('hidden');
+            const resScreen = document.getElementById('result-screen');
+            resScreen.classList.remove('hidden');
+            
+            document.getElementById('result-emoji').textContent = currentSpecimen.emoji;
+            document.getElementById('result-name').textContent = data.result;
+            document.getElementById('result-scientific').textContent = data.scientific;
+            
+            // Llenar rasgos
+            const ul = document.getElementById('result-traits');
+            ul.innerHTML = '';
+            data.traits.forEach(t => {
+                const li = document.createElement('li');
+                li.className = "flex items-start";
+                li.innerHTML = `<span class="text-teal-500 mr-2 font-bold">✓</span> <span>${t}</span>`;
+                ul.appendChild(li);
+            });
+
+            // Llenar tabla taxonómica
+            const taxDiv = document.getElementById('result-taxonomy');
+            taxDiv.innerHTML = '';
+            for (const [rango, valor] of Object.entries(currentSpecimen.taxonomy)) {
+                taxDiv.innerHTML += `
+                    <div class="flex justify-between border-b border-teal-700 py-1">
+                        <span class="capitalize text-teal-300">${rango}:</span>
+                        <span class="font-bold tracking-wide">${valor}</span>
+                    </div>`;
+            }
+            
+            Swal.fire({
+                icon: 'success',
+                title: 'Clasificación Exacta',
+                text: `El análisis determinó que el organismo es: ${data.scientific}`,
+                confirmButtonColor: '#0f766e'
+            });
+        }
+    </script>
+</body>
+</html>
